@@ -5,7 +5,7 @@ import gdown
 import os
 
 st.set_page_config(
-    page_title="Dashboard Combustible",
+    page_title="Dashboard Combustible creado por Evelyn H.-MPC Octubre 2026",
     page_icon="⛽",
     layout="wide"
 )
