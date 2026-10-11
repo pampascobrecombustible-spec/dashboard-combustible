@@ -44,7 +44,7 @@ df.columns = df.columns.str.strip()
 # -----------------------------
 # TITULO
 # -----------------------------
-st.title("⛽ Dashboard de Combustible")
+st.title("⛽ Dashboard Combustible creado por Evelyn H.-MPC Octubre 2026")
 
 # -----------------------------
 # KPI
