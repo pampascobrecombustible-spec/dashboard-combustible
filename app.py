@@ -6,13 +6,15 @@ import os
 
 st.set_page_config(
     page_title="Dashboard Combustible",
+    page_icon="⛽",
     layout="wide"
 )
 
-# ID del archivo de Google Drive
+# -----------------------------
+# DESCARGAR EXCEL DESDE DRIVE
+# -----------------------------
 FILE_ID = "1WMNKVyZCXGln4D8gTH107JsksH85OIg3"
 
-# Descargar Excel
 url = f"https://drive.google.com/uc?id={FILE_ID}"
 
 archivo = "data.xlsx"
@@ -20,31 +22,143 @@ archivo = "data.xlsx"
 if not os.path.exists(archivo):
     gdown.download(url, archivo, quiet=False)
 
-# Leer Excel
+# -----------------------------
+# LEER EXCEL
+# -----------------------------
 xls = pd.ExcelFile(archivo)
 
-st.sidebar.title("Hojas disponibles")
+st.sidebar.title("Filtros")
 
 hoja = st.sidebar.selectbox(
-    "Seleccionar hoja",
+    "Hoja",
     xls.sheet_names
 )
 
 df = pd.read_excel(archivo, sheet_name=hoja)
 
-st.title("🚛 Dashboard de Combustible")
+# -----------------------------
+# LIMPIEZA
+# -----------------------------
+df.columns = df.columns.str.strip()
 
-st.write("Vista previa de datos")
+# -----------------------------
+# TITULO
+# -----------------------------
+st.title("⛽ Dashboard de Combustible")
 
-st.dataframe(df)
+# -----------------------------
+# KPI
+# -----------------------------
+col1, col2, col3, col4 = st.columns(4)
 
-st.subheader("Información general")
+col1.metric(
+    "Registros",
+    len(df)
+)
 
-col1, col2 = st.columns(2)
+col2.metric(
+    "Columnas",
+    len(df.columns)
+)
 
-col1.metric("Registros", len(df))
-col2.metric("Columnas", len(df.columns))
+if "VEHICULO/-EQUIPO" in df.columns:
+    col3.metric(
+        "Equipos",
+        df["VEHICULO/-EQUIPO"].nunique()
+    )
 
-st.subheader("Columnas disponibles")
+if "EMPRESA-USUARIA" in df.columns:
+    col4.metric(
+        "Empresas",
+        df["EMPRESA-USUARIA"].nunique()
+    )
 
-st.write(list(df.columns))
+st.divider()
+
+# -----------------------------
+# TABLA
+# -----------------------------
+with st.expander("Ver datos"):
+    st.dataframe(
+        df,
+        use_container_width=True
+    )
+
+# -----------------------------
+# GRAFICO EMPRESA
+# -----------------------------
+if "EMPRESA-USUARIA" in df.columns:
+
+    empresa = (
+        df["EMPRESA-USUARIA"]
+        .value_counts()
+        .reset_index()
+    )
+
+    empresa.columns = ["Empresa", "Registros"]
+
+    fig = px.bar(
+        empresa.head(10),
+        x="Empresa",
+        y="Registros",
+        title="Top Empresas"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+# -----------------------------
+# GRAFICO AREA
+# -----------------------------
+if "AREA-SPONSOR" in df.columns:
+
+    area = (
+        df["AREA-SPONSOR"]
+        .value_counts()
+        .reset_index()
+    )
+
+    area.columns = ["Area", "Registros"]
+
+    fig2 = px.bar(
+        area,
+        x="Area",
+        y="Registros",
+        title="Consumo por Área"
+    )
+
+    st.plotly_chart(
+        fig2,
+        use_container_width=True
+    )
+
+# -----------------------------
+# TOP EQUIPOS
+# -----------------------------
+if "VEHICULO/-EQUIPO" in df.columns:
+
+    equipos = (
+        df["VEHICULO/-EQUIPO"]
+        .value_counts()
+        .head(15)
+        .reset_index()
+    )
+
+    equipos.columns = [
+        "Equipo",
+        "Abastecimientos"
+    ]
+
+    fig3 = px.bar(
+        equipos,
+        x="Equipo",
+        y="Abastecimientos",
+        title="Top 15 Equipos"
+    )
+
+    st.plotly_chart(
+        fig3,
+        use_container_width=True
+    )
